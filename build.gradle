@@ -1,0 +1,38 @@
+buildscript {
+    ext.kotlin_version = '1.4.21'
+    ext.kotlin_coroutines_version = '1.4.2'
+    repositories {
+        maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
+
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
+
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+
+ext {
+    minSdkVersion = 21
+    targetSdkVersion = 30
+    compileSdkVersion = 30
+    buildToolsVersion = '30.0.2'
+    versionCode = 1
+    versionName = "1.0.0"
+}
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
