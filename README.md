@@ -1,41 +1,6 @@
-## 今日头条屏幕适配方案终极版，一个极低成本的 Android 屏幕适配方案.
+# 今日头条屏幕适配方案终极版，一个极低成本的 Android 屏幕适配方案.
 
 
-## Overview
-### Pixel 2 XL | 1440 x 2880 | 560dpi:
-<p>
-   <img src="art/1440x2880_width.png" width="30%" height="30%">
-   <img src="art/1440x2880_height.png" width="30%" height="30%">
-   <img src="art/1440x2880_external.png" width="30%" height="30%">
-</p>
-
-### Pixel XL | 1440 x 2560 | 560dpi:
-<p>
-   <img src="art/1440x2560_width.png" width="30%" height="30%">
-   <img src="art/1440x2560_height.png" width="30%" height="30%">
-   <img src="art/1440x2560_external.png" width="30%" height="30%">
-</p>
-
-### Nexus 5X | 1080 x 1920 | 420dpi:
-<p>
-   <img src="art/1080x1920_width.png" width="30%" height="30%">
-   <img src="art/1080x1920_height.png" width="30%" height="30%">
-   <img src="art/1080x1920_external.png" width="30%" height="30%">
-</p>
-
-### Nexus 4 | 768 x 1280 | 320dpi:
-<p>
-   <img src="art/768x1280_width.png" width="30%" height="30%">
-   <img src="art/768x1280_height.png" width="30%" height="30%">
-   <img src="art/768x1280_external.png" width="30%" height="30%">
-</p>
-
-### Nexus S | 480 x 800 | 240dpi:
-<p>
-   <img src="art/480x800_width.png" width="30%" height="30%">
-   <img src="art/480x800_height.png" width="30%" height="30%">
-   <img src="art/480x800_external.png" width="30%" height="30%">
-</p>
 
 ## Notice
 * [主流机型设备信息，可以作为参考](https://material.io/tools/devices/)
@@ -44,17 +9,21 @@
 
 * [原理分析](https://juejin.im/post/5b7a29736fb9a019d53e7ee2)
 
-* [今日头条屏幕适配方案常见问题汇总](https://github.com/JessYanCoding/AndroidAutoSize/issues/13)
 
-* [Android 进阶框架](https://github.com/JessYanCoding/MVPArms)
 
-* 对于老项目，如果使用了 **AndroidAutoLayout**，请参考 [**AndroidAutoLayout** 迁移指南](https://github.com/JessYanCoding/AndroidAutoSize/issues/90)，**AndroidAutoSize** 可以和 [**AndroidAutoLayout**](https://github.com/hongyangAndroid/AndroidAutoLayout) 一起使用，因为 **AndroidAutoLayout** 使用的是 **px**，所以 **AndroidAutoSize** 对它不会产生任何影响，如果老项目的某些页面之前使用了 **dp** 进行布局，并且 **AndroidAutoSize** 对这些页面已经产生了不良影响，可以让之前使用了 **dp** 的旧 **Activity** 实现 **CancelAdapt** 取消适配，**建议使用副单位，使用副单位则不会影响之前使用了 dp 的页面 (也不会影响三方库和系统控件)，详情请查看 [demo-subunits](https://github.com/JessYanCoding/AndroidAutoSize/tree/master/demo-subunits)** 
-
-## Download
-``` gradle
- implementation 'me.jessyan:autosize:1.2.1'
 ```
-
+allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+```
+```
+dependencies {
+	        implementation 'com.github.ewgcat:AndroidAutoSize:1.0.0'
+	}
+```
 ## Usage
 ### Step 1 (真的不吹牛逼，只需要以下这一步，框架就可以对项目中的所有页面进行适配)
 * **请在 AndroidManifest 中填写全局设计图尺寸 (单位 dp)，如果使用副单位，则可以直接填写像素尺寸，不需要再将像素转化为 dp，详情请查看 [demo-subunits](https://github.com/JessYanCoding/AndroidAutoSize/tree/master/demo-subunits)**
@@ -100,9 +69,9 @@
 ## Advanced (以下用法看不懂？答应我，认真看 demo 好不好？)
 
 ### Activity
-* **当某个 Activity 的设计图尺寸与在 AndroidManifest 中填写的全局设计图尺寸不同时，可以实现 CustomAdapt 接口扩展适配参数**
-```java
-public class CustomAdaptActivity extends AppCompatActivity implements CustomAdapt {
+* **当某个 Activity 的设计图尺寸与在 AndroidManifest 中填写的全局设计图尺寸不同时，可以实现 CustomAdapter 接口扩展适配参数**
+```kotlin
+public class CustomAdaptActivity : AppCompatActivity(), CustomAdapter {
 
     @Override
     public boolean isBaseOnWidth() {
@@ -116,38 +85,65 @@ public class CustomAdaptActivity extends AppCompatActivity implements CustomAdap
 }
 ```
 
-* **当某个 Activity 想放弃适配，请实现 CancelAdapt 接口**
-```java
-public class CancelAdaptActivity extends AppCompatActivity implements CancelAdapt {
+* **当某个 Activity 想放弃适配，请实现 CancelAdapter 接口**
+```kotlin
 
+class CustomAdapterActivity : AppCompatActivity(), CancelAdapter {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_custom_adapt)
+    }
+
+    /**
+     * 跳转到 [FragmentHost], 展示项目内部的 [Fragment] 自定义适配参数的用法
+     *
+     * @param view [View]
+     */
+    fun goCustomAdaptFragment(view: View?) {
+        startActivity(Intent(applicationContext, FragmentHost::class.java))
+    }
+
+    /**
+     * 是否按照宽度进行等比例适配 (为了保证在高宽比不同的屏幕上也能正常适配, 所以只能在宽度和高度之中选择一个作为基准进行适配)
+     *
+     * @return `true` 为按照宽度进行适配, `false` 为按照高度进行适配
+     */
+    override val isBaseOnWidth: Boolean
+        get() = false
+
+
+    override val sizeInDp: Float
+        get() = 667f
 }
 ```
 
 ### Fragment
 * **首先开启支持 Fragment 自定义参数的功能**
-```java
-AutoSizeConfig.getInstance().setCustomFragment(true);
+```kotlin
+AutoSizeConfig.instance!!.setCustomFragment(true)
 ```
 
 * **当某个 Fragment 的设计图尺寸与在 AndroidManifest 中填写的全局设计图尺寸不同时，可以实现 CustomAdapt 接口扩展适配参数**
-```java
-public class CustomAdaptFragment extends Fragment implements CustomAdapt {
+```kotlin
+ class CustomAdaptFragment : Fragment(), CustomAdapter {
+          override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+              //由于某些原因, 屏幕旋转后 Fragment 的重建, 会导致框架对 Fragment 的自定义适配参数失去效果
+              //所以如果您的 Fragment 允许屏幕旋转, 则请在 onCreateView 手动调用一次 AutoSize.autoConvertDensity()
+              //如果您的 Fragment 不允许屏幕旋转, 则可以将下面调用 AutoSize.autoConvertDensity() 的代码删除掉
+                autoConvertDensity(activity!!, 720f, true)
+              return createTextView(inflater, "Fragment-2\nView width = 360dp\nTotal width = 720dp", -0xff0100)
+          }
 
-    @Override
-    public boolean isBaseOnWidth() {
-        return false;
-    }
-
-    @Override
-    public float getSizeInDp() {
-        return 667;
-    }
-}
+         override val isBaseOnWidth: Boolean
+                  get() = true
+         override val sizeInDp: Float
+                  get() = 720f
+ }
 ```
 
 * **当某个 Fragment 想放弃适配，请实现 CancelAdapt 接口**
-```java
-public class CancelAdaptFragment extends Fragment implements CancelAdapt {
+```kotlin
+ class CancelAdapterFragment : Fragment(),  CancelAdapter {
 
 }
 ```
@@ -156,11 +152,11 @@ public class CancelAdaptFragment extends Fragment implements CancelAdapt {
 * 可以在 **pt、in、mm** 这三个冷门单位中，选择一个作为副单位，副单位是用于规避修改 **DisplayMetrics#density** 所造成的对于其他使用 **dp** 布局的系统控件或三方库控件的不良影响，使用副单位后可直接填写设计图上的像素尺寸，不需要再将像素转化为 **dp**
 
 
-```java
-AutoSizeConfig.getInstance().getUnitsManager()
-        .setSupportDP(false)
-        .setSupportSP(false)
-        .setSupportSubunits(Subunits.MM);
+```kotlin
+        AutoSizeConfig.instance!!.unitsManager
+                .setSupportDP(false)
+                .setSupportSP(false)
+                .setSupportSubunits(Subunits.MM)
 ```
 
 
